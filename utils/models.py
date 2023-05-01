@@ -13,7 +13,11 @@ import torchvision.models as models
 class Generator(nn.Module):
     def __init__(self, in_channels=3):
         super(Generator, self).__init__()
-        vgg19 = models.vgg19(pretrained=False)
+#        vgg19 = models.vgg19(pretrained=False)
+        vgg19 = models.vgg19()
+        model_weights_path = 'vgg19-dcbb9e9d.pth'
+        vgg19.load_state_dict(torch.load(model_weights_path))
+        vgg19.train()
         self.encoder = nn.Sequential(
             *list(vgg19.features.children())[:18],  # conv1 to pool3 of VGG-19
             nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1),
