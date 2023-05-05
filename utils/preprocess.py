@@ -1,6 +1,7 @@
 import os
 import cv2
 import torch
+import random
 import numpy as np
 from torch.utils.data import Dataset, DataLoader
 from torchvision.transforms import ToTensor
@@ -9,7 +10,7 @@ class FaceCompletionDataset(Dataset):
     def __init__(self, image_dir, block_size=(64, 64)):
         self.image_dir = image_dir
         self.block_size = block_size
-        self.image_list = os.listdir(image_dir)[:64*5]
+        self.image_list = os.listdir(image_dir)
         
     def __len__(self):
         return len(self.image_list)
@@ -30,10 +31,11 @@ class FaceCompletionDataset(Dataset):
         image = cv2.imread(image_path)
 
         masked_image, mask = self.random_block_mask(image)
-
+        #mask = np.expand_dims(mask, axis=0)
+    
         image = ToTensor()(image)
         #mask = ToTensor()(mask)
         mask = torch.tensor(mask, dtype=torch.float32).unsqueeze(0) 
         masked_image = ToTensor()(masked_image)
-
+ 
         return image, mask, masked_image
