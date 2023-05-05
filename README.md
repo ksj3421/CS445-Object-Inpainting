@@ -20,16 +20,17 @@ mkdir data_faces && wget https://s3-us-west-1.amazonaws.com/udacity-dlnfd/datase
 ## File Structure & description
 ```
 .
-├── config
-├── data_faces
-├── model_trained
-├── preprocessed_images
+├── config                   - config for parsing network 
+├── data_faces               - sample original data 
+├── model_trained            - trained model
+├── preprocessed_images      - sample preprocessed data 
 ├── pretrained_model
+│   ├── parset_00100000.pt   - pretrained model from https://github.com/easternCar/Face-Parsing-Network
 ├── utils
 │   ├── __init__.py
-│   ├── evaluate.py
-│   ├── models.py
-│   └── network_seq_contour.py
+│   ├── evaluate.py            - evaluation functions included
+│   ├── models.py              - generator, discriminator model defined
+│   └── network_seq_contour.py - parsing network model instance
 ├── preprocess.py
 ├── .gitattributes
 ├── README.md
