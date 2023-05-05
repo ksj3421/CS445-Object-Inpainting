@@ -3,7 +3,7 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 import numpy as np
 from math import exp
-from skimage.metrics import peak_signal_noise_ratio as psnr, structural_similarity as ssim
+from skimage.metrics import peak_signal_noise_ratio as psnr
 
 def evaluate_models(G, D_G, D_L, dataloader, criterion_rec, criterion_parsing, criterion_ssim, face_parsing_model, device):
     G = G.eval()
@@ -141,7 +141,7 @@ def ssim(img1, img2, window_size = 11, size_average = True):
     
     return _ssim(img1, img2, window, window_size, channel, size_average)
 
-def evaluate_model_external(model, dataloader, device):
+def evaluate_model_external(model, dataloader, device, criterion_ssim):
     model.eval()
     total_psnr = 0
     total_ssim = 0
@@ -151,16 +151,18 @@ def evaluate_model_external(model, dataloader, device):
         for i, (images, masks, masked_images) in enumerate(dataloader):
             images = images.to(device)
             masks = masks.to(device) 
-            _, completed_images = model(images, masks)
- 
+            
+            first_out, second_out  = model(images, masks)
+            first_out_wholeimg = images * (1 - masks) + first_out * masks     
+            second_out_wholeimg = images * (1 - masks) + second_out * masks
+            
             for i in range(images.size(0)):
                 image = images[i].cpu().numpy().transpose(1, 2, 0)
-                completed_image = completed_images[i].cpu().numpy().transpose(1, 2, 0)
+                completed_image = second_out_wholeimg[i].cpu().numpy().transpose(1, 2, 0)
 
                 total_psnr += psnr(image, completed_image)
-                total_ssim += ssim(image, completed_image, multichannel=True, win_size=3, data_range=1)
+                total_ssim += criterion_ssim(second_out_wholeimg, images).item()
 
             total_samples += images.size(0)
 
     return total_psnr / total_samples, total_ssim / total_samples
-
