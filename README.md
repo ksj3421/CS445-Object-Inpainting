@@ -43,8 +43,6 @@ mkdir data_faces && wget https://s3-us-west-1.amazonaws.com/udacity-dlnfd/datase
 ├── combine_result.ipynb     - demonstrates the process of masking faces and inpainting them using the trained model
 └── result.csv               - training evaluation result
 ```
-
- 
 ## Setup
 To set up the environment and install the required packages, run:
 
@@ -53,3 +51,34 @@ pip install -r requirements.txt
 ```
 
 After installing the required packages, follow the instructions in each Jupyter notebook to preprocess the data, train the model, and evaluate its performance.
+
+## Detail implementaion
+
+* Data Preparation:
+    * The implementation uses the FaceCompletionDataset class, a public dataset which is called CelebA . We applied a random block mask when loading a batch from the data loader. 
+* Methodology
+    * Model Details
+    * Generator 
+        * Gated CNN Generator - which have demonstrated improved performance over traditional CNNs for the task of image inpainting. 
+            * Coarse Network
+                * Encoder-decoder structure with a bottleneck
+                * GatedConv2D layers for better feature selection
+                * TransposeGatedConv2D layers for upsampling
+            * Refinement Network
+                * Similar architecture as the Coarse Network
+                * Fine-tunes the output from the Coarse Network
+    * Discriminator
+        * Consists of several downsampling layers (Conv2D, InstanceNorm2D, and LeakyReLU)
+        * Utilizes a custom discriminator block for flexible configuration
+        * Employs a stride of 1 in the last downsampling layer and a ZeroPad2D layer followed by a Conv2D layer to output the final prediction
+    * Loss Functions:
+        * Adversarial Loss: Encourages the generator to produce realistic images that can fool the discriminator.
+        * Contextual Loss(Reconstruction Loss): Measures the difference between the ground truth image and the in-painted image.
+        * Perceptual Loss(pretrained parsing network): Ensures that the generated inpainting respects the semantic structure of the image.
+    * Optimizers and Learning Rate Schedulers:
+        * Adam optimizers are used for both the generator and the discriminators with learning rates of 0.0001.
+        * Reduce learning rate for every fifth epoch
+
+
+ 
+
